@@ -60,16 +60,16 @@ Download and unzip [`sample-comments.zip`](https://github.com/aioobe/dead-simple
 ### Render comments + a comment HTML form
 Download the following files:
 
-- [`test-page.md`](test-page.md), save in the root of your site
+- [`test-page.md`](https://github.com/aioobe/dead-simple-jekyll-comments/raw/master/test-page.md), save in the root of your site
 
-  Apart from some sample CSS, this page contains
-  
-    [...]
+  The interesting part is at the bottom:
+
+      ...
     
-    Comments
-    --------
-    {% include comments.html replies_to=page.url %}
-    {% include comment-form.html replies_to=page.url %}
+      Comments
+      --------
+      {% include comments.html replies_to=page.url %}
+      {% include comment-form.html replies_to=page.url %}
 
 - [`comments.html`](comments.html), save it in `/_includes`
 
@@ -81,7 +81,7 @@ Download the following files:
 
 Build the site and open the resulting `test-page.html`. You should see something like this:
 
-![Sample comments screenshot](screenshot.png)
+<img src="screenshot.png" style="max-width: 30em" />
 
 ### Create a script for adding comments
 Download the [`add-comment.sh`](add-comment.sh) bash script. Place it in a new directory called `comments-server` outside your repository.
