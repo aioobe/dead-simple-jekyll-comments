@@ -1,0 +1,7 @@
+{%- for entry in site.data.comments -%}
+    {%- if entry[1].reply_to == include.replies_to -%}
+        {%- assign comment_count = comment_count | plus: 1 -%}
+        {%- assign com_id = entry[0] -%}
+        {%- include count-comments.html replies_to=com_id -%}
+    {%- endif -%}
+{%- endfor -%}

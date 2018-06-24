@@ -1,0 +1,11 @@
+- id: "add-comment"
+  execute-command: "./add-comment.sh"
+  pass-arguments-to-command:
+    - source: url
+      name: reply_to
+    - source: url
+      name: author
+    - source: url
+      name: email
+    - source: url
+      name: text
