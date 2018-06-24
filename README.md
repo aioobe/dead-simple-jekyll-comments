@@ -15,7 +15,7 @@ How it works
 - Each comment is stored as a yaml file in `_data/comments`
 - Comments are rendered with Liquid
 - A static HTML form is included in each article
-- Form submissions are intercepted by [`webhook`]() and processed by a bash script
+- Form submissions are intercepted by [`webhook`](https://github.com/adnanh/webhook) and processed by a bash script
 - This bash script creates a comment file in a separate branch
 - Comment is reviewed and merged into master
 
