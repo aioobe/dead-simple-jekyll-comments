@@ -2,9 +2,10 @@ Dead Simple Jekyll Comments
 ===========================
 DIY comment system for Jekyll
 
-- Works on any repo (Github, Bitbucket, ...)
+- Works on any repo (Github, Bitbucket, ...) including private ones
 - No need to trust a third party
 - No JavaScript
+- No SQL
 - No PHP
 - No Ruby
 - Only Liquid and one shell script
@@ -54,7 +55,7 @@ The above example illustrates be a top level comment on `/some-post.html`. Had i
     reply_to: 1516695540-quRch1Gi
     ...
 
-The comment files are stored in `_data/comments`. Download and unzip [`sample-comments.zip`](sample-comments.zip) in this directory.
+Download and unzip [`sample-comments.zip`](https://github.com/aioobe/dead-simple-jekyll-comments/raw/master/sample-comments.zip) and put these files in `_data/comments`.
 
 ### Render comments + a comment HTML form
 Download the following files:
