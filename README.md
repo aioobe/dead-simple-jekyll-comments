@@ -81,7 +81,7 @@ Download the following files:
 
 Build the site and open the resulting `test-page.html`. You should see something like this:
 
-<img src="screenshot.png" style="max-width: 30em" />
+![Sample comments screenshot](screenshot.png)
 
 ### Create a script for adding comments
 Download the [`add-comment.sh`](add-comment.sh) bash script. Place it in a new directory called `comments-server` outside your repository.
