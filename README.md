@@ -12,11 +12,12 @@ DIY comment system for Jekyll
 
 How it works
 ------------
+- Each comment is stored as a yaml file in `_data/comments`
+- Comments are rendered with Liquid
 - A static HTML form is included in each article
 - Form submissions are intercepted by [`webhook`]() and processed by a bash script
-- This script creates a separate branch and writes the form values to a yaml file in `_data/comments`
+- This bash script creates a comment file in a separate branch
 - Comment is reviewed and merged into master
-- Comment files are rendered using Liquid includes
 
 Detailed Instructions
 ---------------------
@@ -39,9 +40,7 @@ The file name should be `<comment id>.yaml` where the comment id is on the forma
 
 **Example:** `1516695540-quRch1Gi.yaml`
 
-The format is carefully chosen: The timestamp makes it trivial to show the comments in the correct order, and the random suffix avoids collisions when two comments are submitted the same second **and** makes the comment id unguessable, should you decide to have some approve/reject moderation link.
-
-The file should live in `_data/comments`.
+The format is carefully chosen: The timestamp makes it easy to show the comments in chronological order, and the random suffix avoids collisions when two comments are submitted the same second **and** makes the comment id unguessable, should you decide to have some approve/reject moderation link. Each comment lives in a separate file to avoid merge conflicts.
 
 The comment file format looks like follows:
 
@@ -50,11 +49,12 @@ The comment file format looks like follows:
     email: john.doe@gmail.com
     text: Nice article!
 
-The above would be a top level comment on `/some-post.html`. Had it been a reply to another comment, it would have had something like
+The above example illustrates be a top level comment on `/some-post.html`. Had it been a reply to another comment, it would have looked something like
 
     reply_to: 1516695540-quRch1Gi
+    ...
 
-Here are some sample comments: [`sample-comments.zip`](sample-comments.zip). Unzip and place these files in `_data/comments`.
+The comment files are stored in `_data/comments`. Download and unzip [`sample-comments.zip`](sample-comments.zip) in this directory.
 
 ### Render comments + a comment HTML form
 Download the following files:
@@ -72,7 +72,7 @@ Download the following files:
 
 - [`comments.html`](comments.html), save it in `/_includes`
 
-  This file displays a comment tree. The `replies_to` parameter should be `page.url`. Internally it includes itself recursively for comment replies. The `replies_to` parameter then refers to the parent comment.
+  This file displays a comment tree. The `replies_to` parameter should be `page.url`. Internally it includes itself recursively to render conversation trees. The `replies_to` parameter then refers to the parent comment.
 
 - [`comment-form.html`](comment-form.html), save it in `/_includes`
 
@@ -85,31 +85,31 @@ Build the site and open the resulting `test-page.html`. You should see something
 ### Create a script for adding comments
 Download the [`add-comment.sh`](add-comment.sh) bash script. Place it in a new directory called `comments-server` outside your repository.
 
-The usage is
+The script needs a local copy of your repository, so, from within `comments-server/`, issue the following clone command:
+
+    git clone --bare <YOUR REPO URL.git> repo
+
+You can now try out `add-comment.sh`. The usage is
 
     ./add-comment.sh <reply_to> <author> <email> <text>
 
 The script does the following:
 
 1. Makes sure the local copy of the repo is up to date
-2. Clones a working copy
+2. Clones a teporary working copy
 2. Creates a branch off of master
 3. Writes the arguments to a yaml file according to the comment file format
 4. Commits and pushes
 5. Removes the working copy of the repo
 
-Note that the script assumes there's a local copy of the repository in `./repo`, so from within `comments-server/` do
+The reason for creating a temporary copy of the repository is to allow multiple concurrent comment submissions. An alternative approach is to invoke `add-comment.sh` through [`tsp`](http://vicerveza.homeunix.net/~viric/soft/ts/) which enqueues commands and runs them in sequence.
 
-    git clone --bare <YOUR REPO URL.git> repo
-
-The reason for creating a temporary copy of repository is to allow multiple concurrent comment submissions. An alternative is to invoke `add-comment.sh` through the brilliant program [`tsp`](http://vicerveza.homeunix.net/~viric/soft/ts/) which serializes all invocations.
-
-It depends on [`yq`](https://github.com/mikefarah/yq) for writing yaml files to simplify handling of multiline strings.
+The script uses [`yq`](https://github.com/mikefarah/yq) for writing yaml files to simplify handling of multiline strings.
 
 ### Create a webhook configuration file
-Download [`hooks.yaml`](hooks.yaml) and place it in `comments-server`.
+Download [`hooks.yaml`](hooks.yaml) and place it in the `comments-server` directory.
 
-This configuration says that requests to `/hooks/add-comment` should trigger `add-comment.sh`.
+This configuration says that requests to `<domain>:9000/hooks/add-comment` should trigger `add-comment.sh`.
 
 ### Launch webhook and test
 Launch `webhook`:
@@ -122,9 +122,9 @@ Additional Features
 -------------------
 
 ### Comment Count
-The file [`count-comments.md`](count-comments.md) counts the number of comments in a comment thread and stores the result in a variable called `comment_count`. Put it in `_includes` and use it as follows:
+The file [`count-comments.html`](count-comments.html) counts the number of comments in a comment thread and stores the result in a variable called `comment_count`. Put it in `_includes` and use it as follows:
 
-    {%- include count-comments.md replies_to=page.url -%}
+    {%- include count-comments.html replies_to=page.url -%}
     <h2>Comments ({{- comment_count -}})</h2>
 
 or, a more elaborate version:
