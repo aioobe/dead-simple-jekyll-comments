@@ -13,8 +13,8 @@ DIY comment system for Jekyll
 
 How it works
 ------------
-- Each comment is stored as a yaml file in `_data/comments`
-- Comments are rendered with Liquid
+- Each comment is stored as a yaml [data file](https://jekyllrb.com/docs/datafiles/) in `_data/comments`
+- Comments are rendered entirely with Liquid
 - A static HTML form is included in each article
 - Form submissions are intercepted by [`webhook`](https://github.com/adnanh/webhook) and processed by a bash script
 - This bash script creates a comment file in a separate branch
@@ -36,8 +36,19 @@ On Ubuntu:
 
     # apt install yq webhook passwd
 
+Create a Jekyll site if you don't have one to toy around with
+
+    $ jekyll new simple-comments
+    $ cd simple-comments
+
 ### Sample comment files
-The file name should be `<comment id>.yaml` where the comment id is on the format `<unix timestamp>-<random identifier>`.
+Create a directory for the comment files
+
+    $ mkdir -p _data/comments
+
+Download and unzip [`sample-comments.zip`](https://github.com/aioobe/dead-simple-jekyll-comments/raw/master/sample-comments.zip) into this directory.
+
+The format of a comment file name is `<comment id>.yaml` where the comment id is `<unix timestamp>-<random identifier>`.
 
 **Example:** `1516695540-quRch1Gi.yaml`
 
@@ -55,10 +66,16 @@ The above example illustrates be a top level comment on `/some-post.html`. Had i
     reply_to: 1516695540-quRch1Gi
     ...
 
-Download and unzip [`sample-comments.zip`](https://github.com/aioobe/dead-simple-jekyll-comments/raw/master/sample-comments.zip) and put these files in `_data/comments`.
-
 ### Render comments + a comment HTML form
 Download the following files:
+
+- [`comments.html`](comments.html), save it in `/_includes`
+
+  This file displays a comment tree. The `replies_to` parameter should be `page.url`. Internally it includes itself recursively to render conversation trees. The `replies_to` parameter then refers to the parent comment.
+
+- [`comment-form.html`](comment-form.html), save it in `/_includes`
+
+  A simple comment form.
 
 - [`test-page.md`](https://github.com/aioobe/dead-simple-jekyll-comments/raw/master/test-page.md), save in the root of your site
 
@@ -71,28 +88,29 @@ Download the following files:
       {% include comments.html replies_to=page.url %}
       {% include comment-form.html replies_to=page.url %}
 
-- [`comments.html`](comments.html), save it in `/_includes`
-
-  This file displays a comment tree. The `replies_to` parameter should be `page.url`. Internally it includes itself recursively to render conversation trees. The `replies_to` parameter then refers to the parent comment.
-
-- [`comment-form.html`](comment-form.html), save it in `/_includes`
-
-  A simple comment form.
-
 Build the site and open the resulting `test-page.html`. You should see something like this:
 
 ![Sample comments screenshot](screenshot.png)
 
 ### Create a script for adding comments
-Download the [`add-comment.sh`](add-comment.sh) bash script. Place it in a new directory called `comments-server` outside your repository.
+Create a directory for the comment processing server (preferrably outside your Jekyll directory)
 
-The script needs a local copy of your repository, so, from within `comments-server/`, issue the following clone command:
+    $ mkdir comments-server
 
-    git clone --bare <YOUR REPO URL.git> repo
+Download the [`add-comment.sh`](add-comment.sh) bash script and place it in this directory.
+
+The script needs a local copy of your repository...
+
+    $ cd comments-server
+    $ git clone --bare <YOUR REPO URL.git> repo
 
 You can now try out `add-comment.sh`. The usage is
 
     ./add-comment.sh <reply_to> <author> <email> <text>
+
+So, type something like
+
+    $ ./add-comment.sh /test-page.html "Your Name" "your@email.com" "Hello world!"
 
 The script does the following:
 
@@ -140,6 +158,8 @@ or, a more elaborate version:
     Be the first to comment!
     {% endif %}
     {% include comment-form.html reply_to=page.url %}
+
+### nginx and cors headers...
 
 ### Email features
 `ssmtp` is trivial to configure and allows you to...
