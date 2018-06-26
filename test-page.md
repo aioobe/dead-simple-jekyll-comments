@@ -65,4 +65,4 @@ label {
 Comments
 --------
 {% include comments.html replies_to=page.url %}
-{% include comment-form.html replies_to=page.url %}
+{% include comment-form.html reply_to=page.url %}

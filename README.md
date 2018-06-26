@@ -20,8 +20,8 @@ How it works
 - This bash script creates a comment file in a separate branch
 - Comment is reviewed and merged into master
 
-Detailed Instructions
----------------------
+Setup Instructions
+------------------
 Outline:
 
 0. Install prerequisits
@@ -35,11 +35,6 @@ Outline:
 On Ubuntu:
 
     # apt install yq webhook passwd
-
-Create a Jekyll site if you don't have one to toy around with
-
-    $ jekyll new simple-comments
-    $ cd simple-comments
 
 ### Sample comment files
 Create a directory for the comment files
@@ -88,7 +83,11 @@ Download the following files:
       {% include comments.html replies_to=page.url %}
       {% include comment-form.html replies_to=page.url %}
 
-Build the site and open the resulting `test-page.html`. You should see something like this:
+Build the site...
+
+    $ bundle exec jekyll serve
+
+...and open the resulting page: [http://localhost:4000/test-page.html](http://localhost:4000/test-page.html). You should see something like this:
 
 ![Sample comments screenshot](screenshot.png)
 
@@ -97,7 +96,9 @@ Create a directory for the comment processing server (preferrably outside your J
 
     $ mkdir comments-server
 
-Download the [`add-comment.sh`](add-comment.sh) bash script and place it in this directory.
+Download the [`add-comment.sh`](add-comment.sh) bash script and place it in this directory. Make it executable
+
+    $ chmod +x add-comment.sh
 
 The script needs a local copy of your repository...
 
@@ -117,7 +118,7 @@ The script does the following:
 1. Makes sure the local copy of the repo is up to date
 2. Clones a teporary working copy
 2. Creates a branch off of master
-3. Writes the arguments to a yaml file according to the comment file format
+3. Writes the script arguments to a yaml file according to the comment file format
 4. Commits and pushes
 5. Removes the working copy of the repo
 
@@ -159,16 +160,23 @@ or, a more elaborate version:
     {% endif %}
     {% include comment-form.html reply_to=page.url %}
 
-### nginx and cors headers...
+### Nginx and CORS headers
+If you're serving the form submission requests from a different host/port than the rest of the webpage, you might need to add CORS headers to your response. This can be done in `hooks.yaml`. This can be done by passing a `-header name=value` argument to `webhook`.
+
+Another alternative is to serve both static files and webhooks on the same domain and port using nginx. The configuration would then look as follows:
+
+    ...
+    location /_hooks/ {
+        proxy_pass http://127.0.0.1:9000;
+    }
+    location / {
+        root /home/user/my_blog/_site;
+    }
+    ...
 
 ### Email features
-`ssmtp` is trivial to configure and allows you to...
-- Notify you about new comments
-- This email can contain links to other webhooks that
-  - accepts the comment (merges into master)
-  - rejects the comment (deletes the branch)
-- Verify the users email by:
-  - First putting the comment file in an "unverified" directory
-  - Send an email to the provided email address with a link to a webhook
-  - The webhook triggers a script that creates a branch, moves comment file to the data directory and commits / pushes.
-- If you have a CI system that builds all branches, you can include a link to the comment branch to easily review how the comment looks rendered.
+`msmtp` is [trivial to configure](https://wiki.archlinux.org/index.php/msmtp) and allows you to send a notification email about new comments. Such email could contain links to webhooks for accept or reject (merge or delete branch) a comment.
+
+You could also include a verification step by putting new comments in an "unverified" directory, send an email to the provided address, with a link to a "confirm" webhook that moves the comment to the repository.
+
+If you have a CI system that builds all branches, you can include a link to the comment branch to easily review how the comment looks rendered.
